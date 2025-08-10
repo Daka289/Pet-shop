@@ -1,0 +1,67 @@
+# Git files
+.git
+.gitignore
+
+# Python cache
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+.tox
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.log
+
+# Virtual environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Project specific
+node_modules/
+npm-debug.log
+yarn-error.log
+.pytest_cache/
+.mypy_cache/
+
+# Database
+*.db
+*.sqlite3
+
+# Media files (handled by volumes)
+media/
+
+# Documentation
+README.md
+docs/
+
+# Docker files
+Dockerfile*
+docker-compose*.yml
+.dockerignore 
