@@ -1,9 +1,7 @@
-# Pet Shop - Dockerized Django E-commerce Application
-
+# Pet Shop -Ecommerce app
 ## Team Members
-- **Ime**: [Your Name] 
-- **Prezime**: [Your Last Name]
-- **Broj indeksa**: [Your Student ID]
+- **Danilo Todorovic 2023/0284**
+- **Andrija Topic 2023/0486**
 
 *Add other team members if working in a group*
 
@@ -381,6 +379,8 @@ petshop/
 │   ├── views.py           # Business logika
 │   ├── admin.py           # Admin konfiguracija
 │   └── templates/         # HTML templates
+|
+├──media/products          #images for web
 ├── accounts/               # User management
 │   ├── models.py          # UserProfile model
 │   ├── views.py           # Authentication views
