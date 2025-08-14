@@ -3,6 +3,7 @@
 {% block title %}Products - Pet Shop{% endblock %}
 
 {% block content %}
+{% csrf_token %}
 <div class="container my-5">
     <div class="row">
         <div class="col-lg-3">
@@ -25,11 +26,20 @@
                 {% for product in page_obj %}
                 <div class="col-lg-4 col-md-6 mb-4">
                     <div class="card product-card h-100 shadow-sm">
-                        <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 200px; overflow: hidden;">
+                        <div class="card-img-top bg-light d-flex align-items-center justify-content-center position-relative" style="height: 200px; overflow: hidden;">
                             {% if product.image %}
                                 <img src="{{ product.image.url }}" alt="{{ product.name }}" class="img-fluid" style="max-height: 100%; max-width: 100%; object-fit: cover;">
                             {% else %}
                                 <i class="fas fa-bone fa-3x text-muted"></i>
+                            {% endif %}
+                            {% if user.is_authenticated %}
+                            <button class="btn btn-sm position-absolute top-0 end-0 m-2 wishlist-btn" 
+                                    data-product-id="{{ product.id }}" 
+                                    data-bs-toggle="tooltip" 
+                                    title="{% if product.id in user_wishlist_products %}Remove from Wishlist{% else %}Add to Wishlist{% endif %}"
+                                    style="background: rgba(255,255,255,0.9); border: none; border-radius: 50%; width: 40px; height: 40px;">
+                                <i class="fas fa-heart {% if product.id in user_wishlist_products %}text-danger{% else %}text-muted{% endif %}"></i>
+                            </button>
                             {% endif %}
                         </div>
                         <div class="card-body d-flex flex-column">
@@ -39,11 +49,11 @@
                                 {% if product.is_on_sale %}
                                     <span class="badge bg-danger mb-2">{{ product.discount_percentage }}% OFF</span>
                                     <p class="mb-1">
-                                        <span class="text-decoration-line-through text-muted">${{ product.price }}</span>
-                                        <span class="fw-bold text-success">${{ product.get_price }}</span>
+                                        <span class="text-decoration-line-through text-muted">€{{ product.price }}</span>
+                                        <span class="fw-bold text-success">€{{ product.get_price }}</span>
                                     </p>
                                 {% else %}
-                                    <p class="fw-bold text-success mb-2">${{ product.price }}</p>
+                                    <p class="fw-bold text-success mb-2">€{{ product.price }}</p>
                                 {% endif %}
                                 <div class="d-flex gap-2">
                                     <a href="/product/{{ product.slug }}/" class="btn btn-primary flex-fill">View Details</a>
@@ -69,4 +79,56 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize tooltips
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+
+    // Wishlist functionality
+    const wishlistBtns = document.querySelectorAll('.wishlist-btn');
+    
+    wishlistBtns.forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const productId = this.dataset.productId;
+            const icon = this.querySelector('i');
+            
+            fetch(`/add-to-wishlist/${productId}/`, {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.in_wishlist) {
+                    icon.classList.remove('text-muted');
+                    icon.classList.add('text-danger');
+                    this.setAttribute('title', 'Remove from Wishlist');
+                } else {
+                    icon.classList.remove('text-danger');
+                    icon.classList.add('text-muted');
+                    this.setAttribute('title', 'Add to Wishlist');
+                }
+                
+                // Update tooltip
+                const tooltip = bootstrap.Tooltip.getInstance(this);
+                if (tooltip) {
+                    tooltip.setContent({'.tooltip-inner': this.getAttribute('title')});
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        });
+    });
+});
+</script>
 {% endblock %} 

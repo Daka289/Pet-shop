@@ -5,6 +5,8 @@ from django.contrib import messages
 from django.contrib.auth.models import User
 from .forms import UserRegistrationForm, UserProfileForm
 from .models import UserProfile
+from shop.models import Wishlist
+from orders.models import Order
 
 
 def user_login(request):
@@ -49,14 +51,23 @@ def user_register(request):
 
 @login_required
 def user_profile(request):
-    """User profile view"""
+    """User profile view with wishlist and orders"""
     try:
         profile = request.user.userprofile
     except UserProfile.DoesNotExist:
         profile = UserProfile.objects.create(user=request.user)
     
+    # Handle profile form submission
     if request.method == 'POST':
         form = UserProfileForm(request.POST, request.FILES, instance=profile)
+        
+        # Handle user fields
+        user = request.user
+        user.first_name = request.POST.get('first_name', '')
+        user.last_name = request.POST.get('last_name', '')
+        user.email = request.POST.get('email', user.email)
+        user.save()
+        
         if form.is_valid():
             form.save()
             messages.success(request, 'Your profile has been updated successfully!')
@@ -64,8 +75,26 @@ def user_profile(request):
     else:
         form = UserProfileForm(instance=profile)
     
+    # Get user's wishlist
+    wishlist_products = []
+    wishlist_count = 0
+    try:
+        wishlist = Wishlist.objects.get(user=request.user)
+        wishlist_products = wishlist.products.filter(is_active=True).select_related('category')[:12]
+        wishlist_count = wishlist.products.filter(is_active=True).count()
+    except Wishlist.DoesNotExist:
+        pass
+    
+    # Get user's orders
+    orders = Order.objects.filter(user=request.user).prefetch_related('items__product').order_by('-created_at')[:10]
+    orders_count = Order.objects.filter(user=request.user).count()
+    
     context = {
         'form': form,
         'profile': profile,
+        'wishlist_products': wishlist_products,
+        'wishlist_count': wishlist_count,
+        'orders': orders,
+        'orders_count': orders_count,
     }
     return render(request, 'accounts/profile.html', context) 

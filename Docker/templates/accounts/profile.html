@@ -1,0 +1,377 @@
+{% extends 'base.html' %}
+
+{% block title %}My Profile - Pet Shop{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row">
+        <!-- Profile Sidebar -->
+        <div class="col-lg-3">
+            <div class="card shadow-sm">
+                <div class="card-body text-center">
+                    {% if profile.profile_picture %}
+                        <img src="{{ profile.profile_picture.url }}" alt="Profile Picture" 
+                             class="rounded-circle mb-3" style="width: 100px; height: 100px; object-fit: cover;">
+                    {% else %}
+                        <div class="bg-primary rounded-circle d-inline-flex align-items-center justify-content-center mb-3" 
+                             style="width: 100px; height: 100px;">
+                            <i class="fas fa-user fa-3x text-white"></i>
+                        </div>
+                    {% endif %}
+                    <h5 class="card-title">{{ user.get_full_name|default:user.username }}</h5>
+                    <p class="text-muted">{{ user.email }}</p>
+                    <small class="text-muted">Member since {{ user.date_joined|date:"M Y" }}</small>
+                </div>
+            </div>
+            
+            <!-- Navigation Menu -->
+            <div class="list-group mt-3">
+                <a href="#profile-info" class="list-group-item list-group-item-action active profile-tab" data-tab="profile-info">
+                    <i class="fas fa-user me-2"></i>Profile Information
+                </a>
+                <a href="#wishlist" class="list-group-item list-group-item-action profile-tab" data-tab="wishlist">
+                    <i class="fas fa-heart me-2"></i>My Wishlist
+                    <span class="badge bg-primary rounded-pill ms-auto">{{ wishlist_count }}</span>
+                </a>
+                <a href="#orders" class="list-group-item list-group-item-action profile-tab" data-tab="orders">
+                    <i class="fas fa-shopping-bag me-2"></i>My Orders
+                    <span class="badge bg-primary rounded-pill ms-auto">{{ orders_count }}</span>
+                </a>
+            </div>
+        </div>
+        
+        <!-- Profile Content -->
+        <div class="col-lg-9">
+            <!-- Profile Information Tab -->
+            <div id="profile-info-content" class="tab-content active">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-primary text-white">
+                        <h4 class="mb-0"><i class="fas fa-user me-2"></i>Profile Information</h4>
+                    </div>
+                    <div class="card-body">
+                        <form method="post" enctype="multipart/form-data">
+                            {% csrf_token %}
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="id_user-first_name" class="form-label">First Name</label>
+                                        <input type="text" class="form-control" id="id_user-first_name" 
+                                               name="first_name" value="{{ user.first_name }}">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="id_user-last_name" class="form-label">Last Name</label>
+                                        <input type="text" class="form-control" id="id_user-last_name" 
+                                               name="last_name" value="{{ user.last_name }}">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="id_user-email" class="form-label">Email</label>
+                                        <input type="email" class="form-control" id="id_user-email" 
+                                               name="email" value="{{ user.email }}">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        {{ form.phone_number.label_tag }}
+                                        {{ form.phone_number }}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        {{ form.date_of_birth.label_tag }}
+                                        {{ form.date_of_birth }}
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        {{ form.profile_picture.label_tag }}
+                                        {{ form.profile_picture }}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                {{ form.address.label_tag }}
+                                {{ form.address }}
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        {{ form.city.label_tag }}
+                                        {{ form.city }}
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="mb-3">
+                                        {{ form.postal_code.label_tag }}
+                                        {{ form.postal_code }}
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="mb-3">
+                                        {{ form.country.label_tag }}
+                                        {{ form.country }}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <div class="form-check">
+                                    {{ form.newsletter_subscription }}
+                                    {{ form.newsletter_subscription.label_tag }}
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i>Update Profile
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Wishlist Tab -->
+            <div id="wishlist-content" class="tab-content">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                        <h4 class="mb-0"><i class="fas fa-heart me-2"></i>My Wishlist</h4>
+                        <span class="badge bg-light text-dark">{{ wishlist_count }} items</span>
+                    </div>
+                    <div class="card-body">
+                        {% if wishlist_products %}
+                            <div class="row">
+                                {% for product in wishlist_products %}
+                                <div class="col-lg-4 col-md-6 mb-4">
+                                    <div class="card h-100 shadow-sm">
+                                        <div class="card-img-top bg-light d-flex align-items-center justify-content-center position-relative" style="height: 200px; overflow: hidden;">
+                                            {% if product.image %}
+                                                <img src="{{ product.image.url }}" alt="{{ product.name }}" 
+                                                     class="img-fluid" style="max-height: 100%; max-width: 100%; object-fit: cover;">
+                                            {% else %}
+                                                <i class="fas fa-bone fa-3x text-muted"></i>
+                                            {% endif %}
+                                            <button class="btn btn-sm position-absolute top-0 end-0 m-2 remove-wishlist-btn" 
+                                                    data-product-id="{{ product.id }}" 
+                                                    data-bs-toggle="tooltip" 
+                                                    title="Remove from Wishlist"
+                                                    style="background: rgba(255,255,255,0.9); border: none; border-radius: 50%; width: 40px; height: 40px;">
+                                                <i class="fas fa-times text-danger"></i>
+                                            </button>
+                                        </div>
+                                        <div class="card-body d-flex flex-column">
+                                            <h6 class="card-title">{{ product.name }}</h6>
+                                            <p class="card-text small text-muted">{{ product.description|truncatewords:10 }}</p>
+                                            <div class="mt-auto">
+                                                {% if product.is_on_sale %}
+                                                    <p class="mb-2">
+                                                        <span class="text-decoration-line-through text-muted small">€{{ product.price }}</span>
+                                                        <span class="fw-bold text-success">€{{ product.get_price }}</span>
+                                                    </p>
+                                                {% else %}
+                                                    <p class="fw-bold text-success mb-2">€{{ product.price }}</p>
+                                                {% endif %}
+                                                <div class="d-grid gap-2">
+                                                    <a href="{{ product.get_absolute_url }}" class="btn btn-outline-primary btn-sm">View Details</a>
+                                                    <form method="post" action="{% url 'shop:add_to_cart' product.id %}">
+                                                        {% csrf_token %}
+                                                        <button type="submit" class="btn btn-success btn-sm w-100">Add to Cart</button>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="text-center py-5">
+                                <i class="fas fa-heart fa-4x text-muted mb-3"></i>
+                                <h5 class="text-muted">Your wishlist is empty</h5>
+                                <p class="text-muted">Start adding products you love to your wishlist!</p>
+                                <a href="{% url 'shop:product_list' %}" class="btn btn-primary">Browse Products</a>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Orders Tab -->
+            <div id="orders-content" class="tab-content">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                        <h4 class="mb-0"><i class="fas fa-shopping-bag me-2"></i>My Orders</h4>
+                        <span class="badge bg-light text-dark">{{ orders_count }} orders</span>
+                    </div>
+                    <div class="card-body">
+                        {% if orders %}
+                            {% for order in orders %}
+                            <div class="card mb-3 border-start border-primary border-4">
+                                <div class="card-body">
+                                    <div class="row align-items-center">
+                                        <div class="col-md-8">
+                                            <h6 class="card-title mb-1">Order #{{ order.order_number }}</h6>
+                                            <p class="text-muted mb-1">
+                                                <i class="fas fa-calendar me-1"></i>{{ order.created_at|date:"M d, Y" }}
+                                                <span class="ms-3"><i class="fas fa-euro-sign me-1"></i>€{{ order.total_amount }}</span>
+                                            </p>
+                                            <p class="mb-0">
+                                                <span class="badge bg-{% if order.status == 'delivered' %}success{% elif order.status == 'shipped' %}info{% elif order.status == 'processing' %}warning{% elif order.status == 'cancelled' %}danger{% else %}secondary{% endif %}">
+                                                    {{ order.get_status_display }}
+                                                </span>
+                                            </p>
+                                        </div>
+                                        <div class="col-md-4 text-end">
+                                            <a href="#" class="btn btn-outline-primary btn-sm">
+                                                <i class="fas fa-eye me-1"></i>View Details
+                                            </a>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Order Items Preview -->
+                                    <div class="mt-3">
+                                        <small class="text-muted">Items:</small>
+                                        <div class="d-flex flex-wrap gap-1 mt-1">
+                                            {% for item in order.items.all|slice:":3" %}
+                                                <span class="badge bg-light text-dark">{{ item.quantity }}x {{ item.product.name|truncatechars:20 }}</span>
+                                            {% endfor %}
+                                            {% if order.items.count > 3 %}
+                                                <span class="badge bg-secondary">+{{ order.items.count|add:"-3" }} more</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="text-center py-5">
+                                <i class="fas fa-shopping-bag fa-4x text-muted mb-3"></i>
+                                <h5 class="text-muted">No orders yet</h5>
+                                <p class="text-muted">When you place an order, it will appear here!</p>
+                                <a href="{% url 'shop:product_list' %}" class="btn btn-primary">Start Shopping</a>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .tab-content {
+        display: none;
+    }
+    
+    .tab-content.active {
+        display: block;
+    }
+    
+    .profile-tab.active {
+        background-color: var(--primary-color) !important;
+        color: white !important;
+    }
+    
+    .form-control {
+        border-radius: 8px;
+    }
+    
+    .card {
+        border-radius: 12px;
+    }
+    
+    .remove-wishlist-btn:hover {
+        transform: scale(1.1);
+        transition: transform 0.2s;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Tab switching functionality
+    const profileTabs = document.querySelectorAll('.profile-tab');
+    const tabContents = document.querySelectorAll('.tab-content');
+    
+    profileTabs.forEach(tab => {
+        tab.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            // Remove active class from all tabs and contents
+            profileTabs.forEach(t => t.classList.remove('active'));
+            tabContents.forEach(content => content.classList.remove('active'));
+            
+            // Add active class to clicked tab
+            this.classList.add('active');
+            
+            // Show corresponding content
+            const targetTab = this.dataset.tab;
+            const targetContent = document.getElementById(targetTab + '-content');
+            if (targetContent) {
+                targetContent.classList.add('active');
+            }
+        });
+    });
+    
+    // Initialize tooltips
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+    
+    // Remove from wishlist functionality
+    const removeWishlistBtns = document.querySelectorAll('.remove-wishlist-btn');
+    
+    removeWishlistBtns.forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const productId = this.dataset.productId;
+            const productCard = this.closest('.col-lg-4');
+            
+            fetch(`/add-to-wishlist/${productId}/`, {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (!data.in_wishlist) {
+                    // Remove the product card with animation
+                    productCard.style.opacity = '0';
+                    productCard.style.transform = 'scale(0.8)';
+                    productCard.style.transition = 'all 0.3s ease';
+                    
+                    setTimeout(() => {
+                        productCard.remove();
+                        
+                        // Update wishlist count
+                        const countBadge = document.querySelector('.profile-tab[data-tab="wishlist"] .badge');
+                        if (countBadge) {
+                            const currentCount = parseInt(countBadge.textContent);
+                            countBadge.textContent = currentCount - 1;
+                        }
+                        
+                        // Check if wishlist is now empty
+                        const remainingProducts = document.querySelectorAll('#wishlist-content .col-lg-4');
+                        if (remainingProducts.length === 0) {
+                            location.reload(); // Reload to show empty state
+                        }
+                    }, 300);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        });
+    });
+});
+</script>
+{% endblock %}

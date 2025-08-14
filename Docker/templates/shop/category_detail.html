@@ -22,7 +22,7 @@
                     <h5 class="card-title">{{ product.name }}</h5>
                     <p class="card-text">{{ product.description|truncatewords:10 }}</p>
                     <div class="mt-auto">
-                        <p class="fw-bold text-success mb-2">${{ product.get_price }}</p>
+                        <p class="fw-bold text-success mb-2">€{{ product.get_price }}</p>
                         <div class="d-flex gap-2">
                             <a href="/product/{{ product.slug }}/" class="btn btn-primary flex-fill">View Details</a>
                             {% if user.is_authenticated %}

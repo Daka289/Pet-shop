@@ -9,7 +9,7 @@
 
 ### 1. Korisnički zahtev i namena aplikacije
 
-**Pet Shop** je potpuna e-commerce aplikacija za prodaju kućnih ljubimaca i prateće opreme. Aplikacija omogućava kupcima da pregledaju i kupuju proizvode, upravljaju svojim profilima, dodaju proizvode u korpu i listu želja, kao i da prate svoje porudžbine.
+**Pet Shop** je potpuna e-commerce aplikacija za prodaju prateće opreme za kucne ljubimce. Aplikacija omogućava kupcima da pregledaju i kupuju proizvode po kategorijama, upravljaju svojim profilima, dodaju proizvode u korpu i listu želja,ostavljaju recenzije na proizvode, kao i da prate svoje porudžbine.
 
 **Glavne funkcionalnosti:**
 - Pregled i pretraga proizvoda po kategorijama
@@ -20,6 +20,7 @@
 - Sistem porudžbina sa praćenjem statusa
 - Admin panel za upravljanje proizvodima i porudžbinama
 - Responzivni dizajn za sve uređaje
+-View profile prikazuje prethodne porudzbine
 
 ### 2. Tehnologije korišćene u aplikaciji
 
@@ -27,7 +28,7 @@
 - **Django 4.2.7** - Python web framework za backend logiku
 - **PostgreSQL 15** - Relaciona baza podataka
 - **Redis 7** - In-memory cache i session storage
-- **Gunicorn** - WSGI server za produkciju
+- **Gunicorn** - WSGI server za pokretanje Django aplikacije u produkciji
 
 **Frontend tehnologije:**
 - **Bootstrap 5** - CSS framework za responzivni dizajn
@@ -167,6 +168,7 @@ def add_to_cart(request, product_id):
 ```
 
 ### 5. Proces kontejnerizacije/dokerizacije
+**Web(Django)->DB(PostgreSQL)->Redis->Nginx**
 
 #### Dockerfile objašnjenje
 
@@ -467,7 +469,7 @@ docker-compose up -d --build
 docker-compose exec web python manage.py migrate
 ```
 
-## Zaključak
+<!-- ## Zaključak
 
 Pet Shop aplikacija demonstrira potpunu implementaciju moderne web aplikacije sa Docker kontejnerizacijom. Aplikacija koristi najbolje prakse za:
 
@@ -476,4 +478,4 @@ Pet Shop aplikacija demonstrira potpunu implementaciju moderne web aplikacije sa
 - **Skalabilnost**: Microservices arhitektura sa Docker Compose
 - **Maintainability**: Čist kod, jasna struktura, dokumentacija
 
-Aplikacija je spremna za produkciju i može se lako deployovati na cloud platforme poput AWS, Azure ili Google Cloud. 
+Aplikacija je spremna za produkciju i može se lako deployovati na cloud platforme poput AWS, Azure ili Google Cloud.  -->

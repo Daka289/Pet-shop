@@ -21,7 +21,7 @@
                         <div class="card-body">
                             <h5 class="card-title">{{ item.product.name }}</h5>
                             <p class="card-text">{{ item.product.description|truncatewords:20 }}</p>
-                            <p class="text-success fw-bold">${{ item.product.get_price }} each</p>
+                            <p class="text-success fw-bold">€{{ item.product.get_price }} each</p>
                         </div>
                     </div>
                     <div class="col-md-4">
@@ -33,7 +33,7 @@
                                     <button type="submit" class="btn btn-outline-primary">Update</button>
                                 </div>
                             </form>
-                            <p class="fw-bold">Total: ${{ item.total_price }}</p>
+                            <p class="fw-bold">Total: €{{ item.total_price }}</p>
                             <form method="post" action="{% url 'shop:remove_from_cart' item.id %}">
                                 {% csrf_token %}
                                 <button type="submit" class="btn btn-danger btn-sm">Remove</button>
@@ -52,8 +52,10 @@
                 </div>
                 <div class="card-body">
                     <p>Items: {{ cart.total_items }}</p>
-                    <h4>Total: ${{ cart.total_price }}</h4>
-                    <a href="#" class="btn btn-success w-100">Proceed to Checkout</a>
+                    <h4>Total: €{{ cart.total_price }}</h4>
+                    <a href="{% url 'shop:checkout' %}" class="btn btn-success w-100">
+                        <i class="fas fa-credit-card me-2"></i>Proceed to Checkout
+                    </a>
                 </div>
             </div>
         </div>
