@@ -1,7 +1,6 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.core.paginator import Paginator
 from shop.models import Cart
 from .models import Order, OrderItem
 import uuid
@@ -55,21 +54,6 @@ def checkout(request):
     }
     return render(request, 'orders/checkout.html', context)
 
-
-@login_required
-def order_list(request):
-    """List user orders"""
-    orders = Order.objects.filter(user=request.user).prefetch_related('items__product')
-    
-    # Pagination
-    paginator = Paginator(orders, 10)
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
-    
-    context = {
-        'page_obj': page_obj,
-    }
-    return render(request, 'orders/order_list.html', context)
 
 
 @login_required
