@@ -13,9 +13,18 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = config('SECRET_KEY', default='django-insecure-change-me-in-production')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = config('DEBUG', default=False, cast=bool)
+DEBUG = config('DEBUG', default=True, cast=bool)  # Default to True for development
 
-ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1').split(',')
+# Always allow common development hosts
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0', 'petshop_web', 'web', 'petshop-web']
+
+# Add any additional hosts from environment
+additional_hosts = config('ALLOWED_HOSTS', default='').split(',')
+ALLOWED_HOSTS.extend([host.strip() for host in additional_hosts if host.strip()])
+
+# Allow all hosts for development or if DEBUG is True
+if DEBUG:
+    ALLOWED_HOSTS = ['*']
 
 # Application definition
 DJANGO_APPS = [
