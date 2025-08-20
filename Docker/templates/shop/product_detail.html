@@ -60,5 +60,211 @@
             {% endif %}
         </div>
     </div>
+    
+    <!-- Reviews Section -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <h3>Customer Reviews</h3>
+            
+            <!-- Average Rating Display -->
+            {% if reviews %}
+            <div class="mb-4">
+                <div class="d-flex align-items-center">
+                    <div class="me-3">
+                        <span class="h4 mb-0">{{ average_rating }}/5</span>
+                    </div>
+                    <div class="me-3">
+                        {% for i in "12345" %}
+                            {% if forloop.counter <= average_rating %}
+                                <i class="fas fa-star text-warning"></i>
+                            {% else %}
+                                <i class="far fa-star text-warning"></i>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                    <div>
+                        <small class="text-muted">({{ total_reviews_count }} review{{ total_reviews_count|pluralize }})</small>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Add Review Form (for authenticated users who haven't reviewed yet) -->
+            {% if user.is_authenticated and review_form and not user_review %}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Write a Review</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" action="{% url 'shop:add_review' product.id %}">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="{{ review_form.rating.id_for_label }}" class="form-label">Rating</label>
+                            {{ review_form.rating }}
+                        </div>
+                        <div class="mb-3">
+                            <label for="{{ review_form.title.id_for_label }}" class="form-label">Review Title</label>
+                            {{ review_form.title }}
+                        </div>
+                        <div class="mb-3">
+                            <label for="{{ review_form.comment.id_for_label }}" class="form-label">Your Review</label>
+                            {{ review_form.comment }}
+                        </div>
+                        <button type="submit" class="btn btn-primary">Submit Review</button>
+                    </form>
+                </div>
+            </div>
+            {% elif user.is_authenticated and user_review %}
+            <div class="alert alert-info mb-4">
+                <i class="fas fa-info-circle me-2"></i>You have already reviewed this product.
+                <a href="#your-review" class="alert-link">View your review below</a>
+            </div>
+            {% elif not user.is_authenticated %}
+            <div class="alert alert-info mb-4">
+                <i class="fas fa-sign-in-alt me-2"></i>
+                <a href="{% url 'accounts:login' %}" class="alert-link">Login</a> to write a review.
+            </div>
+            {% endif %}
+            
+            <!-- Reviews List -->
+            {% if reviews %}
+            <div class="reviews-list">
+                {% for review in reviews %}
+                <div class="card mb-3 {% if review.user == user %}border-primary{% endif %}" {% if review.user == user %}id="your-review"{% endif %}>
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div>
+                                <h6 class="card-title mb-1">{{ review.title }}</h6>
+                                <div class="mb-2">
+                                    {% for i in "12345" %}
+                                        {% if forloop.counter <= review.rating %}
+                                            <i class="fas fa-star text-warning"></i>
+                                        {% else %}
+                                            <i class="far fa-star text-warning"></i>
+                                        {% endif %}
+                                    {% endfor %}
+                                    <span class="ms-2 text-muted">{{ review.rating }}/5</span>
+                                </div>
+                            </div>
+                            <div class="text-end">
+                                <small class="text-muted">
+                                    by {{ review.user.username }}
+                                    {% if review.user == user %}<span class="badge bg-primary ms-1">Your Review</span>{% endif %}
+                                </small>
+                                <br>
+                                <small class="text-muted">{{ review.created_at|date:"M d, Y" }}</small>
+                                {% if review.is_verified_purchase %}
+                                    <br><small class="text-success"><i class="fas fa-check-circle"></i> Verified Purchase</small>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <p class="card-text">{{ review.comment }}</p>
+                        
+                        <!-- Edit/Delete buttons for user's own review -->
+                        {% if review.user == user %}
+                        <div class="mt-2">
+                            <button class="btn btn-sm btn-outline-primary me-2" onclick="editReview({{ review.id }})">
+                                <i class="fas fa-edit"></i> Edit
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger" onclick="deleteReview({{ review.id }})">
+                                <i class="fas fa-trash"></i> Delete
+                            </button>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            
+            <!-- Load More Reviews Button -->
+            {% if total_reviews_count > 5 %}
+            <div class="text-center mt-3">
+                <button class="btn btn-outline-primary" onclick="loadMoreReviews()">
+                    <i class="fas fa-chevron-down me-2"></i>Load More Reviews
+                </button>
+            </div>
+            {% endif %}
+            
+            {% else %}
+            <div class="alert alert-light text-center">
+                <i class="fas fa-comment-slash fa-3x text-muted mb-3"></i>
+                <h5>No reviews yet</h5>
+                <p class="text-muted">Be the first to review this product!</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Related Products Section -->
+    {% if related_products %}
+    <div class="row mt-5">
+        <div class="col-12">
+            <h3>Related Products</h3>
+            <div class="row">
+                {% for related_product in related_products %}
+                <div class="col-md-3 mb-3">
+                    <div class="card h-100">
+                        <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
+                            {% if related_product.image %}
+                                <img src="{{ related_product.image.url }}" alt="{{ related_product.name }}" class="img-fluid" style="max-height: 100%; max-width: 100%; object-fit: cover;">
+                            {% else %}
+                                <i class="fas fa-paw fa-3x text-muted"></i>
+                            {% endif %}
+                        </div>
+                        <div class="card-body d-flex flex-column">
+                            <h6 class="card-title">{{ related_product.name }}</h6>
+                            <p class="card-text text-muted flex-grow-1">{{ related_product.description|truncatewords:10 }}</p>
+                            <div class="mt-auto">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="text-success fw-bold">€{{ related_product.get_price }}</span>
+                                    <a href="{% url 'shop:product_detail' related_product.slug %}" class="btn btn-sm btn-outline-primary">View</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
 </div>
+
+<!-- JavaScript for Review Management -->
+<script>
+function editReview(reviewId) {
+    // Redirect to edit review page
+    window.location.href = `/shop/edit-review/${reviewId}/`;
+}
+
+function deleteReview(reviewId) {
+    if (confirm('Are you sure you want to delete this review?')) {
+        // Send AJAX request to delete review
+        fetch(`/shop/delete-review/${reviewId}/`, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                'Content-Type': 'application/json',
+            },
+        })
+        .then(response => {
+            if (response.ok) {
+                location.reload();
+            } else {
+                alert('Error deleting review. Please try again.');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error deleting review. Please try again.');
+        });
+    }
+}
+
+function loadMoreReviews() {
+    // This would load more reviews via AJAX
+    alert('Load more reviews functionality will be implemented.');
+}
+</script>
+
 {% endblock %} 

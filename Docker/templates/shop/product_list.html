@@ -45,6 +45,27 @@
                         <div class="card-body d-flex flex-column">
                             <h5 class="card-title">{{ product.name }}</h5>
                             <p class="card-text">{{ product.description|truncatewords:15 }}</p>
+                            
+                            <!-- Rating Display -->
+                            {% if product.avg_rating %}
+                            <div class="mb-2">
+                                <div class="d-flex align-items-center">
+                                    {% for i in "12345" %}
+                                        {% if forloop.counter <= product.avg_rating %}
+                                            <i class="fas fa-star text-warning small"></i>
+                                        {% else %}
+                                            <i class="far fa-star text-warning small"></i>
+                                        {% endif %}
+                                    {% endfor %}
+                                    <span class="ms-2 small text-muted">{{ product.avg_rating|floatformat:1 }} ({{ product.reviews_count }} review{{ product.reviews_count|pluralize }})</span>
+                                </div>
+                            </div>
+                            {% elif product.reviews_count == 0 %}
+                            <div class="mb-2">
+                                <small class="text-muted">No reviews yet</small>
+                            </div>
+                            {% endif %}
+                            
                             <div class="mt-auto">
                                 {% if product.is_on_sale %}
                                     <span class="badge bg-danger mb-2">{{ product.discount_percentage }}% OFF</span>

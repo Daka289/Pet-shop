@@ -1,5 +1,4 @@
--- Initialize database for Pet Shop application
-CREATE DATABASE IF NOT EXISTS petshop_db;
-CREATE USER IF NOT EXISTS 'petshop_user'@'%' IDENTIFIED BY 'petshop_password';
-GRANT ALL PRIVILEGES ON petshop_db.* TO 'petshop_user'@'%';
-FLUSH PRIVILEGES; 
+-- Initialize PostgreSQL database for Pet Shop application
+CREATE USER petshop_user WITH ENCRYPTED PASSWORD 'petshop_password';
+CREATE DATABASE petshop_db OWNER petshop_user;
+GRANT ALL PRIVILEGES ON DATABASE petshop_db TO petshop_user;

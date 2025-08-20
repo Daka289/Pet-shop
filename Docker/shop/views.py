@@ -2,9 +2,9 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.core.paginator import Paginator
-from django.db.models import Q, Avg
+from django.db.models import Q, Avg, Count
 from django.http import JsonResponse
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_POST, require_http_methods
 from django.core.cache import cache
 from django.utils import timezone
 import uuid
@@ -22,7 +22,10 @@ def home(request):
         featured_products = Product.objects.filter(
             is_featured=True, 
             is_active=True
-        ).select_related('category')[:8]
+        ).select_related('category').annotate(
+            avg_rating=Avg('reviews__rating'),
+            reviews_count=Count('reviews')
+        )[:8]
         cache.set('featured_products', featured_products, 300)  # Cache for 5 minutes
     
     categories = Category.objects.all()[:6]
@@ -46,7 +49,10 @@ def home(request):
 
 def product_list(request):
     """Product listing with filtering and pagination"""
-    products = Product.objects.filter(is_active=True).select_related('category')
+    products = Product.objects.filter(is_active=True).select_related('category').annotate(
+        avg_rating=Avg('reviews__rating'),
+        reviews_count=Count('reviews')
+    )
     categories = Category.objects.all()
     
     # Filtering
@@ -109,6 +115,7 @@ def product_detail(request, slug):
     # Get all reviews for rating calculation
     all_reviews = product.reviews.all()
     average_rating = all_reviews.aggregate(Avg('rating'))['rating__avg'] or 0
+    total_reviews_count = all_reviews.count()
     
     # Get latest 5 reviews for display
     reviews = all_reviews[:5]
@@ -132,6 +139,7 @@ def product_detail(request, slug):
         'product': product,
         'reviews': reviews,
         'average_rating': round(average_rating, 1),
+        'total_reviews_count': total_reviews_count,
         'related_products': related_products,
         'review_form': review_form,
         'user_review': user_review,
@@ -293,6 +301,46 @@ def add_review(request, product_id):
         messages.error(request, 'Please correct the errors in your review.')
     
     return redirect('shop:product_detail', slug=product.slug)
+
+
+@login_required
+def edit_review(request, review_id):
+    """Edit user's own review"""
+    review = get_object_or_404(Review, id=review_id, user=request.user)
+    
+    if request.method == 'POST':
+        form = ReviewForm(request.POST, instance=review)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Your review has been updated!')
+            return redirect('shop:product_detail', slug=review.product.slug)
+        else:
+            messages.error(request, 'Please correct the errors in your review.')
+    else:
+        form = ReviewForm(instance=review)
+    
+    context = {
+        'form': form,
+        'review': review,
+        'product': review.product,
+    }
+    return render(request, 'shop/edit_review.html', context)
+
+
+@login_required
+@require_http_methods(["DELETE"])
+def delete_review(request, review_id):
+    """Delete user's own review"""
+    review = get_object_or_404(Review, id=review_id, user=request.user)
+    product_slug = review.product.slug
+    review.delete()
+    
+    # Return JSON response for AJAX request
+    if request.headers.get('Content-Type') == 'application/json':
+        return JsonResponse({'success': True})
+    
+    messages.success(request, 'Your review has been deleted.')
+    return redirect('shop:product_detail', slug=product_slug)
 
 
 @login_required
