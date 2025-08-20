@@ -3,7 +3,7 @@
 - **Danilo Todorovic 2023/0284**
 - **Andrija Topic 2023/0486**
 
-*Add other team members if working in a group*
+
 
 ## I deo - Dokumentacija
 

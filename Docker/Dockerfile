@@ -1,7 +1,7 @@
 # Use official Python runtime as base image
 FROM python:3.11-slim
 
-# Set metadata labels (additional Dockerfile option)
+# Set metadata labels   
 LABEL maintainer="Pet Shop Team"
 LABEL version="1.0"
 LABEL description="Django Pet Shop Application"

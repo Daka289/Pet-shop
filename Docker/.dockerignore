@@ -2,7 +2,7 @@
 .git
 .gitignore
 
-# Python cache
+# Python 
 __pycache__
 *.pyc
 *.pyo
