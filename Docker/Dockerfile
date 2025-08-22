@@ -60,7 +60,7 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
     CMD curl -f http://localhost:8000/health/ || exit 1
 
 # Set entrypoint with proper permissions
-ENTRYPOINT ["/app/entrypoint-simple.sh"]
+ENTRYPOINT ["/app/entrypoint.sh"]
 
 # Default command to run the application
 CMD ["gunicorn", "--bind", "0.0.0.0:8000", "--workers", "3", "petshop.wsgi:application"] 
