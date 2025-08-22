@@ -34,20 +34,21 @@ COPY requirements.txt /app/
 RUN pip install --no-cache-dir --upgrade pip \
     && pip install --no-cache-dir -r requirements.txt
 
+# Copy entrypoint script and make it executable (do this as root)
+COPY entrypoint.sh /app/entrypoint.sh
+RUN chmod +x /app/entrypoint.sh
+
 # Copy project files
 COPY . /app/
 
 # Create directories for static and media files
 RUN mkdir -p /app/staticfiles /app/media
 
-# Change ownership to django user
+# Change ownership to django user (including entrypoint script)
 RUN chown -R django:django /app
 
 # Switch to non-root user
 USER django
-
-# Collect static files
-RUN python manage.py collectstatic --noinput
 
 # Expose port
 EXPOSE 8000
@@ -56,5 +57,8 @@ EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
     CMD curl -f http://localhost:8000/health/ || exit 1
 
-# Run application
+# Set entrypoint
+ENTRYPOINT ["/app/entrypoint.sh"]
+
+# Default command to run the application
 CMD ["gunicorn", "--bind", "0.0.0.0:8000", "--workers", "3", "petshop.wsgi:application"] 

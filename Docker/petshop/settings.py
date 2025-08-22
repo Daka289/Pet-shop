@@ -83,16 +83,23 @@ TEMPLATES = [
 WSGI_APPLICATION = 'petshop.wsgi.application'
 
 # Database
-DATABASES = {
-    'default': {
-        'ENGINE': config('DB_ENGINE', default='django.db.backends.postgresql'),
-        'NAME': config('DB_NAME', default='petshop_db'),
-        'USER': config('DB_USER', default='petshop_user'),
-        'PASSWORD': config('DB_PASSWORD', default='petshop_password'),
-        'HOST': config('DB_HOST', default='localhost'),
-        'PORT': config('DB_PORT', default='5432'),
+# Use DATABASE_URL if available, otherwise use individual environment variables
+DATABASE_URL = os.environ.get('DATABASE_URL')
+if DATABASE_URL:
+    DATABASES = {
+        'default': dj_database_url.parse(DATABASE_URL)
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': config('DB_ENGINE', default='django.db.backends.postgresql'),
+            'NAME': config('DB_NAME', default='petshop_db'),
+            'USER': config('DB_USER', default='petshop_user'),
+            'PASSWORD': config('DB_PASSWORD', default='petshop_password'),
+            'HOST': config('DB_HOST', default='localhost'),
+            'PORT': config('DB_PORT', default='5432'),
+        }
+    }
 
 # Redis Cache
 CACHES = {
