@@ -56,9 +56,19 @@ except Exception as e:
 echo "Populating database with sample data..."
 python manage.py populate_data || echo "Data population failed, but continuing..."
 
-# Ensure media directories exist
+# Ensure media directories exist and copy images
 echo "Setting up media directories..."
 mkdir -p /app/media/products /app/media/categories || echo "Media directories setup failed, but continuing..."
+
+# Copy product images from images/ to media/products/ if they exist
+echo "Copying product images..."
+if [ -d "/app/images" ]; then
+    cp -f /app/images/*.png /app/media/products/ 2>/dev/null || echo "No PNG images to copy"
+    cp -f /app/images/*.jpg /app/media/products/ 2>/dev/null || echo "No JPG images to copy"
+    echo "Product images copied to media directory"
+else
+    echo "Images directory not found"
+fi
 
 echo "Setup complete! Starting application..."
 

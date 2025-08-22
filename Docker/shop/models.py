@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.urls import reverse
 from PIL import Image
+import os
 
 
 class Category(models.Model):
@@ -65,11 +66,17 @@ class Product(models.Model):
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
         if self.image:
-            img = Image.open(self.image.path)
-            if img.height > 500 or img.width > 500:
-                output_size = (500, 500)
-                img.thumbnail(output_size)
-                img.save(self.image.path)
+            try:
+                # Check if the image file exists before trying to open it
+                if hasattr(self.image, 'path') and os.path.exists(self.image.path):
+                    img = Image.open(self.image.path)
+                    if img.height > 500 or img.width > 500:
+                        output_size = (500, 500)
+                        img.thumbnail(output_size)
+                        img.save(self.image.path)
+            except (FileNotFoundError, OSError):
+                # Handle cases where image file doesn't exist or can't be processed
+                pass
 
     @property
     def get_price(self):
