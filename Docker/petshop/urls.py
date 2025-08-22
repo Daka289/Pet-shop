@@ -49,8 +49,15 @@ urlpatterns = [
     path('orders/', include('orders.urls')),
 ]
 
-# Serve media and static files
-# In production, we serve media files through Django since we don't have a separate file server
-urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+# Serve media files in production
+from django.views.static import serve
+from django.urls import re_path
+
+# Force media serving in production
+urlpatterns += [
+    re_path(r'^media/(?P<path>.*)$', serve, {'document_root': settings.MEDIA_ROOT}),
+]
+
+# Serve static files only in debug mode
 if settings.DEBUG:
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT) 
