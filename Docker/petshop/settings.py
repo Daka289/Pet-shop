@@ -15,16 +15,22 @@ SECRET_KEY = config('SECRET_KEY', default='django-insecure-change-me-in-producti
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DEBUG', default=True, cast=bool)  # Default to True for development
 
-# Always allow common development hosts
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0', 'petshop_web', 'web', 'petshop-web']
-
-# Add any additional hosts from environment
-additional_hosts = config('ALLOWED_HOSTS', default='').split(',')
-ALLOWED_HOSTS.extend([host.strip() for host in additional_hosts if host.strip()])
-
-# Allow all hosts for development or if DEBUG is True
+# Configure allowed hosts for different environments
 if DEBUG:
+    # Development: allow all hosts
     ALLOWED_HOSTS = ['*']
+else:
+    # Production: specific hosts only
+    ALLOWED_HOSTS = [
+        'pet-shop-floz.onrender.com',
+        'localhost', 
+        '127.0.0.1', 
+        '0.0.0.0'
+    ]
+    
+    # Add any additional hosts from environment
+    additional_hosts = config('ALLOWED_HOSTS', default='').split(',')
+    ALLOWED_HOSTS.extend([host.strip() for host in additional_hosts if host.strip()])
 
 # Application definition
 DJANGO_APPS = [
