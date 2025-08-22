@@ -39,13 +39,35 @@ mkdir -p /app/media/products /app/media/categories || echo "Media directories se
 
 # Copy product images from images/ to media/products/ BEFORE populating data
 echo "Copying product images..."
+echo "Checking for source image directories..."
+ls -la /app/ | grep -E "(images|media)" || echo "No image directories found in /app/"
+
 if [ -d "/app/images" ]; then
-    cp -f /app/images/*.png /app/media/products/ 2>/dev/null || echo "No PNG images to copy"
-    cp -f /app/images/*.jpg /app/media/products/ 2>/dev/null || echo "No JPG images to copy"
-    echo "Product images copied to media directory"
+    echo "Found /app/images directory:"
+    ls -la /app/images/
+    
+    echo "Copying PNG images..."
+    for file in /app/images/*.png; do
+        if [ -f "$file" ]; then
+            cp "$file" "/app/media/products/"
+            echo "Copied: $(basename "$file")"
+        fi
+    done
+    
+    echo "Copying JPG images..."
+    for file in /app/images/*.jpg; do
+        if [ -f "$file" ]; then
+            cp "$file" "/app/media/products/"
+            echo "Copied: $(basename "$file")"
+        fi
+    done
+    
+    echo "Final media/products directory contents:"
     ls -la /app/media/products/ || echo "Could not list media directory"
 else
-    echo "Images directory not found"
+    echo "Images directory not found at /app/images"
+    echo "Looking for alternative locations..."
+    find /app -name "*.png" -type f 2>/dev/null | head -10 || echo "No PNG files found anywhere"
 fi
 
 # Create superuser if it doesn't exist (simplified)
@@ -66,6 +88,10 @@ try:
 except Exception as e:
     print(f'Could not create admin user: {e}')
 " || echo "Superuser creation skipped"
+
+# Run our image copying command as backup
+echo "Running image copy command..."
+python manage.py copy_images || echo "Image copy command failed, but continuing..."
 
 # Populate database with sample data (images should now be available)
 echo "Populating database with sample data..."
