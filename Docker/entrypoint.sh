@@ -33,41 +33,15 @@ python manage.py migrate --noinput || echo "Migrations failed, but continuing...
 echo "Collecting static files..."
 python manage.py collectstatic --noinput --clear || echo "Static files collection failed, but continuing..."
 
-# Ensure media directories exist and copy images FIRST
-echo "Setting up media directories..."
-mkdir -p /app/media/products /app/media/categories || echo "Media directories setup failed, but continuing..."
+# Setup media directories and copy product images
+echo "Setting up media directories and copying images..."
+mkdir -p /app/media/products /app/media/categories
 
-# Copy product images from images/ to media/products/ BEFORE populating data
-echo "Copying product images..."
-echo "Checking for source image directories..."
-ls -la /app/ | grep -E "(images|media)" || echo "No image directories found in /app/"
-
+# Copy product images to media directory
 if [ -d "/app/images" ]; then
-    echo "Found /app/images directory:"
-    ls -la /app/images/
-    
-    echo "Copying PNG images..."
-    for file in /app/images/*.png; do
-        if [ -f "$file" ]; then
-            cp "$file" "/app/media/products/"
-            echo "Copied: $(basename "$file")"
-        fi
-    done
-    
-    echo "Copying JPG images..."
-    for file in /app/images/*.jpg; do
-        if [ -f "$file" ]; then
-            cp "$file" "/app/media/products/"
-            echo "Copied: $(basename "$file")"
-        fi
-    done
-    
-    echo "Final media/products directory contents:"
-    ls -la /app/media/products/ || echo "Could not list media directory"
-else
-    echo "Images directory not found at /app/images"
-    echo "Looking for alternative locations..."
-    find /app -name "*.png" -type f 2>/dev/null | head -10 || echo "No PNG files found anywhere"
+    cp /app/images/*.png /app/media/products/ 2>/dev/null || true
+    cp /app/images/*.jpg /app/media/products/ 2>/dev/null || true
+    echo "Product images copied successfully"
 fi
 
 # Create superuser if it doesn't exist (simplified)
@@ -89,11 +63,7 @@ except Exception as e:
     print(f'Could not create admin user: {e}')
 " || echo "Superuser creation skipped"
 
-# Run our image copying command as backup
-echo "Running image copy command..."
-python manage.py copy_images || echo "Image copy command failed, but continuing..."
-
-# Populate database with sample data (images should now be available)
+# Populate database with sample data
 echo "Populating database with sample data..."
 python manage.py populate_data || echo "Data population failed, but continuing..."
 

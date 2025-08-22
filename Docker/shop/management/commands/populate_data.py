@@ -152,44 +152,10 @@ class Command(BaseCommand):
                     defaults=product_data
                 )
                 
-                # Add image if product was created and image file exists
+                # Add image if product was created
                 if created and image_file:
-                    # Try multiple possible image locations
-                    image_paths = [
-                        os.path.join(settings.BASE_DIR, 'media', 'products', image_file),
-                        os.path.join(settings.BASE_DIR, 'images', image_file),
-                        os.path.join('/app/media/products', image_file),
-                        os.path.join('/app/images', image_file),
-                    ]
-                    
-                    image_found = False
-                    for image_path in image_paths:
-                        if os.path.exists(image_path):
-                            # Copy image to the correct media location if needed
-                            target_path = os.path.join(settings.MEDIA_ROOT, 'products', image_file)
-                            os.makedirs(os.path.dirname(target_path), exist_ok=True)
-                            
-                            if image_path != target_path:
-                                import shutil
-                                try:
-                                    shutil.copy2(image_path, target_path)
-                                    self.stdout.write(f'Copied image: {image_file}')
-                                except Exception as e:
-                                    self.stdout.write(f'Failed to copy image {image_file}: {e}')
-                                    continue
-                            
-                            # Assign image to product
-                            product.image = f'products/{image_file}'
-                            product.save()
-                            image_found = True
-                            self.stdout.write(f'Assigned image to {product.name}: {image_file}')
-                            break
-                    
-                    if not image_found:
-                        self.stdout.write(f'Image not found for {product.name}: {image_file}')
-                        # Still assign the image path even if file doesn't exist - Django will handle it gracefully now
-                        product.image = f'products/{image_file}'
-                        product.save()
+                    product.image = f'products/{image_file}'
+                    product.save()
                 
                 if created:
                     self.stdout.write(f'Created product: {product.name}')
