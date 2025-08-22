@@ -52,8 +52,13 @@ except Exception as e:
     print(f'Could not create admin user: {e}')
 " || echo "Superuser creation skipped"
 
-# Skip data population for now to avoid issues
-echo "Skipping data population for faster startup..."
+# Populate database with sample data
+echo "Populating database with sample data..."
+python manage.py populate_data || echo "Data population failed, but continuing..."
+
+# Ensure media directories exist
+echo "Setting up media directories..."
+mkdir -p /app/media/products /app/media/categories || echo "Media directories setup failed, but continuing..."
 
 echo "Setup complete! Starting application..."
 
